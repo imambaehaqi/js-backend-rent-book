@@ -11,8 +11,8 @@
 ## Installation
 ### Clone
 ```
-$ git clone https://github.com/tatasfachrul/simple-REST
-$ cd simple-REST
+$ git clone https://github.com/imambaehaqi/JS-BackendRentBookApp.git
+$ cd JS-BackendRentBookApp
 $ npm install
 ```
 
@@ -52,11 +52,10 @@ $ npm start
 ○ Book by Availability
 ○ Pagination
 ○ Cannot borrow a book that has already been borrowed
-○
-Optional: Login/Register with JWT
+○ Optional: Login/Register with JWT
 ```
 
 ### License
 ----
 
-[Beerware](https://en.wikipedia.org/wiki/Beerware "Beerware") © [Tatas](https://github.com/tatasfachrul "Tatas")
+[ISC](https://en.wikipedia.org/wiki/ISC_license "ISC") © [Tatas](https://github.com/tatasfachrul "Tatas")
