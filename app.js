@@ -1,37 +1,38 @@
 require('dotenv').config()
 
+// import libary
 const express = require('express')
 const app = express()
 const logger = require('morgan')
 const bodyParser = require('body-parser')
-const Cors = require('cors')
+// const Cors = require('cors')
 const xssFilter = require('x-xss-protection')
 const http = require('http')
 
 const bookRoute = require('./src/routes/books')
 const genreRoute = require('./src/routes/genres')
 const borrowRoute = require('./src/routes/borrows')
-const registRoute = require('./src/routes/users')
+// const registRoute = require('./src/routes/users')
 
-const server = require('http').createServer(app)
+// const server = require('http').createServer(app)
 const port = process.env.SERVER_PORT || 7000
 
 const userRoute = require('./src/routes/users')
-const whitelist = process.env.WHITELIST
+// const whitelist = process.env.WHITELIST
 
-const corsOptions = (req, callback) => {
-  if (whitelist.split(',').indexOf(req.header('Origin')) !== -1) {
-    console.log('Success')
-    return callback(null, {
-      origin: true
-    })
-  } else {
-    console.log('Failed')
-    return callback(null, {
-      origin: false
-    })
-  }
-}
+// const corsOptions = (req, callback) => {
+//   if (whitelist.split(',').indexOf(req.header('Origin')) !== -1) {
+//     console.log('Success')
+//     return callback(null, {
+//       origin: true
+//     })
+//   } else {
+//     console.log('Failed')
+//     return callback(null, {
+//       origin: false
+//     })
+//   }
+// }
 
 app.use(xssFilter())
 app.use(logger('dev'))
@@ -42,9 +43,11 @@ app.listen(port, () => {
   )
 })
 
+// user controllers input
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
+// url pages
 app.use('/books', bookRoute)
 app.use('/borrows', borrowRoute)
 app.use('/genres', genreRoute)

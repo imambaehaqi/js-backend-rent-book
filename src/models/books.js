@@ -1,7 +1,11 @@
 const conn = require('../configs/db')
 
 module.exports = {
-  insertBookPromise: (data) => {
+  /*
+    function promise:
+    promising data that does not yet have data.
+  */
+  insertBookPromise: (data) => { // parameter in function
     return new Promise((resolve, reject) => {
       conn.query('INSERT tb_books SET ?', data,
         (err, result) => {
@@ -50,16 +54,16 @@ module.exports = {
   },
   getAllPromise: (keyword = null, sort = null, type, available = null, skip, limit) => {
     return new Promise((resolve, reject) => {
-      let query = 'SELECT * FROM tb_books '
+      let query = 'SELECT * FROM tb_books ' // call query in db
 
       const availableNotNull = available != null
       const keywordNotNull = keyword != null
 
       if (availableNotNull || keywordNotNull) {
         query += `WHERE `
-        query += availableNotNull ? `available = ${available} ` : ``
-        query += availableNotNull && keywordNotNull ? `AND ` : ``
-        query += keywordNotNull ? `title LIKE '%${keyword}%' ` : ''
+        query += availableNotNull ? `available = ${available} ` : `` // if 'true' : 'false'
+        query += availableNotNull && keywordNotNull ? `AND ` : `` // if 'true' : 'false'
+        query += keywordNotNull ? `title LIKE '%${keyword}%' ` : '' // if 'true' : 'false'
       }
       if (sort != null) {
         query += `ORDER BY ${sort} `

@@ -1,6 +1,7 @@
 const modelBooks = require('../models/books')
 
 module.exports = {
+  // GET All Book
   getAll: (req, res) => {
     const keyword = req.query.search
     const sort = req.query.sortby
@@ -17,6 +18,7 @@ module.exports = {
   findOneBook: (req, res) => {
     const bookid = req.params.bookid
 
+    // Call function promise
     modelBooks.findOneBookPromise(bookid)
       .then(result => res.json(result))
       .catch(err => console.log(err))

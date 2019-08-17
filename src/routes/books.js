@@ -4,6 +4,7 @@ const Route = express.Router()
 const BookController = require('../controllers/books')
 
 Route
+  // url pages and implementation routes
   .get('/:bookid', BookController.findOneBook)
   .get('/', BookController.getAll)
   .post('/', BookController.insertBook)
