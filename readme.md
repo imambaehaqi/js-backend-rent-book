@@ -10,6 +10,7 @@
   </a>
 </p>
 
+----
 ## Table of contents
 * [Prerequiste](#prerequiste)
 * [Installation](#installation)
@@ -131,5 +132,4 @@ $ npm start
 
 ### License
 ----
-
 [ISC](https://en.wikipedia.org/wiki/ISC_license "ISC")
