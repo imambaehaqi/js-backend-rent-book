@@ -58,21 +58,21 @@ module.exports = {
         })
     })
   },
-  getDataBorrow: (keyword = null, sort = null, type, rentBook = null, skip, limit) => {
+  getDataBorrow: (keyword = null, sort = null, type, rentbook = null, skip, limit) => {
     return new Promise((resolve, reject) => {
       let query = 'SELECT * FROM tb_borrows '
 
-      const rentBookNotNull = rentBook != null
+      const rentBookNotNull = rentbook != null
       const keywordNotNull = keyword != null
 
       if (rentBookNotNull || keywordNotNull) {
         query += `WHERE `
         query += rentBookNotNull ? `return_at IS ` : ``
-        query += rentBookNotNull && rentBook === 'returned' ? 'NOT NULL ' : 'NULL '
+        query += rentBookNotNull && rentbook === 'returned' ? 'NOT NULL ' : 'NULL '
         query += rentBookNotNull && keywordNotNull ? `AND ` : ``
         query += keywordNotNull ? `title LIKE '%${keyword}%' ` : ''
       }
-      if (sort != null) { query += `ORDER BY ${sort} ${type} ` }
+      if (sort != null) { query += `ORDER BY ${sort} ` }
 
       conn.query(query + `LIMIT ${skip}, ${limit}`, (err, result) => {
         if (err) { reject(err) } else { resolve(result) }

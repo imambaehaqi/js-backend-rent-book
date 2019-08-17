@@ -5,12 +5,12 @@ module.exports = {
     const keyword = req.query.search
     const sort = req.query.sortby
     const type = req.query.typeby
-    const rentBook = req.query.rentBook
+    const rentbook = req.query.rentbook
     const page = req.query.page || 1
     const limit = req.query.limit || 10
     const skip = (Number(page) - 1) * limit
 
-    modelBorrows.getDataBorrow(keyword, sort, type, rentBook, skip, limit)
+    modelBorrows.getDataBorrow(keyword, sort, type, rentbook, skip, limit)
       .then(result => res.json(result))
       .catch(err => console.log(err))
   },
@@ -24,7 +24,6 @@ module.exports = {
   insertBorrow: (req, res) => {
     const data = {
       bookid: req.body.bookid,
-      userid: req.body.userid,
       borrowed_at: new Date()
     }
     modelBorrows.insertBorrowPromise(data)
@@ -34,7 +33,6 @@ module.exports = {
   returnBorrow: (req, res) => {
     const data = {
       bookid: req.body.bookid,
-      userid: req.body.userid,
       return_at: new Date()
     }
     modelBorrows.returnBorrowPromise(data)

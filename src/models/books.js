@@ -1,11 +1,7 @@
 const conn = require('../configs/db')
 
 module.exports = {
-  /*
-    function promise:
-    promising data that does not yet have data.
-  */
-  insertBookPromise: (data) => { // parameter in function
+  insertBookPromise: (data) => {
     return new Promise((resolve, reject) => {
       conn.query('INSERT tb_books SET ?', data,
         (err, result) => {
@@ -54,40 +50,23 @@ module.exports = {
   },
   getAllPromise: (keyword = null, sort = null, type, available = null, skip, limit) => {
     return new Promise((resolve, reject) => {
-      let query = 'SELECT * FROM tb_books ' // call query in db
+      let query = 'SELECT * FROM tb_books '
 
       const availableNotNull = available != null
       const keywordNotNull = keyword != null
 
       if (availableNotNull || keywordNotNull) {
         query += `WHERE `
-        query += availableNotNull ? `available = ${available} ` : `` // if 'true' : 'false'
-        query += availableNotNull && keywordNotNull ? `AND ` : `` // if 'true' : 'false'
-        query += keywordNotNull ? `title LIKE '%${keyword}%' ` : '' // if 'true' : 'false'
+        query += availableNotNull ? `available = ${available} ` : ``
+        query += availableNotNull && keywordNotNull ? `AND ` : ``
+        query += keywordNotNull ? `title LIKE '%${keyword}%' ` : ''
       }
       if (sort != null) {
         query += `ORDER BY ${sort} `
-        if (type == null) { query += `${type} ` }
       }
       conn.query(query + `LIMIT ${skip}, ${limit}`, (err, result) => {
         if (err) { reject(err) } else { resolve(result) }
       })
-    })
-  },
-  getAvailable: (bookid) => {
-    return new Promise((resolve, reject) => {
-      conn.query('SELECT available FROM tb_books WHERE bookid = ?',
-        bookid, (err, result) => {
-          if (err) { reject(err) } else { resolve(result) }
-        })
-    })
-  },
-  setAvailable: (bookid) => {
-    return new Promise((resolve, reject) => {
-      conn.query('SELECT available FROM tb_books WHERE bookid',
-        bookid, (err, result) => {
-          if (err) { reject(err) } else { resolve(result) }
-        })
     })
   }
 }

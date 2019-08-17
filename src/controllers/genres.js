@@ -15,11 +15,11 @@ module.exports = {
       .catch(err => console.log(err))
   },
   updateGenre: (req, res) => {
+    const genreid = req.body.genreid
     const data = {
-      genreid: req.body.genreid,
       name: req.body.name
     }
-    modelGenres.updateGenrePromise(data)
+    modelGenres.updateGenrePromise(genreid, data)
       .then(result => res.json(result))
       .catch(err => console.log(err))
   },

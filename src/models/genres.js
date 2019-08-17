@@ -23,9 +23,9 @@ module.exports = {
       })
     })
   },
-  updateGenrePromise: (data) => {
+  updateGenrePromise: (data, genreid) => {
     return new Promise((resolve, reject) => {
-      conn.query('UPDATE tb_genres SET ?', data, (err, result) => {
+      conn.query('UPDATE tb_genres SET ? WHERE genreid = ?', [data, genreid], (err, result) => {
         if (!err) {
           resolve(result)
         } else {
