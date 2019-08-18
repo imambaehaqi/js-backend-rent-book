@@ -1,4 +1,4 @@
-# RESTful Rent Book App
+# RESTful API Rent Book App
 
 ![](https://img.shields.io/badge/Code%20Style-Standard-yellow.svg)
 ![](https://img.shields.io/badge/Dependencies-Express-green.svg)
