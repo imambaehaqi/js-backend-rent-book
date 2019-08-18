@@ -15,7 +15,7 @@ module.exports = {
       })
       .catch(err => {
         console.error(err)
-        return responses.dataManipulationResponse(res, 500, 'Failed borrow book', err)
+        return responses.dataManipulationResponse(res, 500, 'Failed borrow book or book not available')
       })
   },
   getAllBorrow: (req, res) => {
@@ -62,10 +62,10 @@ module.exports = {
         return responses.dataManipulationResponse(res, 500, 'Failed return book', err)
       })
   },
-  deleteGenres: (req, res) => {
+  deleteBorrow: (req, res) => {
     const borrowid = req.params.borrowid
 
-    modelBorrows.deleteGenre(borrowid)
+    modelBorrows.deleteBorrow(borrowid)
       .then(result => {
         if (result.affectedRows !== 0) return responses.dataManipulationResponse(res, 200, 'Success deleting borrow', { borrowid })
         else return responses.dataManipulationResponse(res, 200, 'Failed to delete', { borrowid })

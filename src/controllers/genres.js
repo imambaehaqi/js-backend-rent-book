@@ -19,8 +19,20 @@ module.exports = {
   getAllGenre: (req, res) => {
     modelGenres.getAllGenre()
       .then(result => {
-        if (result.affectedRows !== 0) return responses.getDataResponse(res, 200, result, result.length)
+        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
         else return responses.getDataResponse(res, 200, 0, 0, null, 'Genre not found')
+      })
+      .catch(err => {
+        console.error(err)
+        return responses.getDataResponse(res, 500, err)
+      })
+  },
+  getOneGenre: (req, res) => {
+    const genreid = req.params.genreid
+    modelGenres.getOneGenre(genreid)
+      .then(result => {
+        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
+        else return responses.getDataResponse(res, 200, null, null, null, 'Genre not found')
       })
       .catch(err => {
         console.error(err)

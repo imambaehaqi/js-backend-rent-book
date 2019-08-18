@@ -21,7 +21,7 @@ module.exports = {
       })
       .catch(err => {
         console.error(err)
-        return responses.dataManipulationResponse(res, 500, 'Failed to insert data book', err)
+        return responses.dataManipulationResponse(res, 500, 'Failed to insert data book or genre not found')
       })
   },
   getAllBook: (req, res) => {
@@ -84,8 +84,8 @@ module.exports = {
     modelBooks.deleteBook(bookid)
       .then(result => {
         result.bookid = bookid
-        if (result.affectedRows !== 0) return responses.dataManipulationResponse(res, 200, 'Success deleting book', result)
-        else return responses.dataManipulationResponse(res, 200, 'Failed delete', result)
+        if (result.affectedRows !== 0) return responses.dataManipulationResponse(res, 200, 'Success deleting book')
+        else return responses.dataManipulationResponse(res, 200, 'Failed delete, data not found')
       })
       .catch(err => {
         console.log(err)

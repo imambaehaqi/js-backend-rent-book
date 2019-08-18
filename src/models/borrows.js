@@ -63,11 +63,10 @@ module.exports = {
             conn.query('UPDATE tb_borrows SET return_at = ? WHERE borrowid = ?',
               [data.return_at, result[0].borrowid], (err, result) => {
                 if (!err) {
+                  resolve(result)
                   conn.query('UPDATE tb_books SET available = 1 WHERE bookid = ?',
                     data.bookid, (err, result) => {
-                      if (!err) {
-                        resolve(result)
-                      } else { reject(err) }
+                      if (!err) {resolve(result)} else { reject(err) }
                     })
                 } else { reject(err) }
               })
