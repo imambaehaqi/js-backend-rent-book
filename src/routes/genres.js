@@ -2,11 +2,13 @@ const express = require('express')
 const Route = express.Router()
 
 const GenreController = require('../controllers/genres')
+const Auth = require('../helpers/auth')
 
 Route
-  .get('/', GenreController.getAll)
-  .post('/', GenreController.insertGenre)
-  .patch('/', GenreController.updateGenre)
-  .delete('/', GenreController.deleteGenre)
+  .post('/', Auth.verifyTokenHelpers, Auth.verifyAdminPrevilege, GenreController.insertGenre)
+  .get('/', GenreController.getAllGenre)
+  .get('/', GenreController.getAllGenre)
+  .patch('/:genreid', Auth.verifyTokenHelpers, Auth.verifyAdminPrevilege, GenreController.updateGenre)
+  .delete('/:genreid', Auth.verifyTokenHelpers, Auth.verifyAdminPrevilege, GenreController.deleteGenre)
 
 module.exports = Route

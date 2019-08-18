@@ -1,98 +1,106 @@
+require('dotenv').config()
 const modelUsers = require('../models/users')
-const MiscHelper = require('../helpers/helpers')
+const responses = require('../responses')
 
-const jwt = require('jsonwebtoken')
-const cloudinary = require('cloudinary').v2
+const isFormValid = (data) => {
+  const Joi = require('@hapi/joi')
+  const schema = Joi.object().keys({
+    username: Joi.string().alphanum().min(3).max(30).required(),
+    password: Joi.string().min(8).required(),
+    email: Joi.string().email({ minDomainSegments: 2 }),
+    level: Joi.string()
+  })
+  const result = Joi.validate(data, schema)
+  if (result.error == null) return true
+  else return false
+}
+
+const hash = (string) => {
+  const crypto = require('crypto-js')
+  return crypto.SHA256(string)
+    .toString(crypto.enc.Hex)
+}
 
 module.exports = {
-  getIndex: (req, res) => {
-    return res.json({ message: 'Hello World' })
-  },
-
-  getUsers: (req, res) => {
-    modelUsers.getUsers((err, result) => {
-      if (err) console.log(err)
-
-      MiscHelper.response(res, result, 200)
-    })
-  },
-
-  userDetail: (req, res) => {
-    const userid = req.params.userid
-
-    modelUsers.userDetail(userid)
-      .then((resultUser) => {
-        const result = resultUser[0]
-        MiscHelper.response(res, result, 200)
-      })
-      .catch((error) => {
-        console.log(error)
-      })
-  },
-
-  register: (req, res) => {
-    const salt = MiscHelper.generateSalt(18)
-    const passwordHash = MiscHelper.setPassword(req.body.password, salt)
-
+  registerUser: (req, res) => {
     const data = {
+      username: req.body.username,
+      password: req.body.password,
       email: req.body.email,
-      fullname: req.body.fullname,
-      password: passwordHash.passwordHash,
-      salt: passwordHash.salt,
-      token: 'Test',
-      status: 1,
-      created_at: new Date(),
-      updated_at: new Date()
+      level: 'regular'
     }
 
-    modelUsers.register(data)
-      .then((resultRegister) => {
-        MiscHelper.response(res, resultRegister, 200)
+    if (!isFormValid(data)) {
+      return responses.dataManipulationResponse(res, 200, 'Data is not valid')
+    }
+
+    data.password = hash(data.password)
+
+    modelUsers.getAllUserWithEmailorUsername(data.email, data.username)
+      .then(result => {
+        if (result.length === 0) return modelUsers.registerUser(data)
+        else return responses.dataManipulationResponse(res, 200, 'Username or email already registered')
       })
-      .catch((error) => {
-        console.log(error)
+      .then(result => responses.dataManipulationResponse(res, 201, 'Success registering new user', { userid: result[0].insertId, username: data.username }))
+      .catch(err => {
+        console.error(err)
+        return responses.dataManipulationResponse(res, 200, 'Failed register', err)
       })
   },
+  getAllUser: (req, res) => {
+    const keyword = req.query.search
+    const sort = req.query.sortby
+    const page = req.query.page || 1
+    const limit = req.query.limit || 10
+    const skip = (Number(page) - 1) * limit
 
-  login: (req, res) => {
+    modelUsers.getAllUser(keyword, sort, skip, limit)
+      .then(result => {
+        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length, null)
+        else return responses.getDataResponse(res, 200, null, null, null, 'All users not found')
+      })
+      .catch(err => {
+        console.error(err)
+        return responses.getDataResponse(res, 500, err)
+      })
+  },
+  getOneUser: (req, res) => {
+    const id = req.params.id
+
+    modelUsers.getOneUser(id)
+      .then(result => {
+        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length, null)
+        else return responses.getDataResponse(res, 200, null, null, null, 'User not found')
+      })
+      .catch(err => {
+        console.error(err)
+        return responses.getDataResponse(res, 500, err)
+      })
+  },
+  loginUser: (req, res) => {
     const email = req.body.email
-    const password = req.body.password
-
-    modelUsers.getByEmail(email)
-      .then((result) => {
-        const dataUser = result[0]
-        const usePassword = MiscHelper.setPassword(password, dataUser.salt).passwordHash
-
-        if (usePassword === dataUser.password) {
-          dataUser.token = jwt.sign({
-            user_id: dataUser.user_id
-          }, process.env.SECRET_KEY, { expiredIn: '1h' })
-
-          delete dataUser.salt
-          delete dataUser.password
-
-          return MiscHelper.response(res, dataUser, 200)
-        } else {
-          return MiscHelper.response(res, null, 403, 'Wrong password!')
-        }
+    const hashedPassword = hash(req.body.password)
+    console.log(hashedPassword)
+    modelUsers.loginUser(email, hashedPassword)
+      .then(result => {
+        if (result.length !== 0) {
+          const jwt = require('jsonwebtoken')
+          const payload = {
+            userid: result[0].userid,
+            email: result[0].email,
+            level: result[0].level
+          }
+          jwt.sign(payload, process.env.JWT_SECRET, (err, token) => {
+            if (err) {
+              console.error(err)
+            }
+            res.json({ token: `Bearer ${token}` })
+          })
+        } else { return responses.dataManipulationResponse(res, 200, 'Username or email is wrong') }
       })
-      .catch((error) => {
-        console.log(error)
+      .catch(err => {
+        console.error(err)
+        return responses.dataManipulationResponse(res, 500, err)
       })
-  },
-
-  cloudinary: async (req, res) => {
-    const file = await req.file
-    console.log(file)
-
-    cloudinary.config({
-      cloud_name: '',
-      api_key: '',
-      api_secret: ''
-    })
-
-    cloudinary.uploader.upload(req.file, (err, result) => {
-      console.log(result, err)
-    })
   }
 }

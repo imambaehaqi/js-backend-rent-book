@@ -1,17 +1,14 @@
 const express = require('express')
 const Route = express.Router()
-const multer = require('multer')
-const upload = multer()
 
 const UserController = require('../controllers/users')
 const Auth = require('../helpers/auth')
 
 Route
-  .all('/*', Auth.authInfo)
-  .get('/', Auth.accesstoken, UserController.getUsers)
-  .get('/:user_id', UserController.userDetail)
-  .post('/register', UserController.register)
-  .post('/login', UserController.login)
-  .post('/cloudinary', upload.single('image'), UserController.cloudinary)
+  .post('/register/admin', Auth.verifyTokenHelpers, Auth.verifyAdminPrevilege, UserController.registerUser)
+  .post('/register', UserController.registerUser)
+  .post('/login', UserController.loginUser)
+  .get('/', Auth.verifyTokenHelpers, Auth.verifyAdminPrevilege, UserController.getAllUser)
+  .get('/:id', Auth.verifyTokenHelpers, Auth.verifyAdminPrevilege, UserController.getOneUser)
 
 module.exports = Route

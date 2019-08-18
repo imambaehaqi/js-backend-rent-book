@@ -1,28 +1,7 @@
 const modelBooks = require('../models/books')
+const responses = require('../responses')
 
 module.exports = {
-  // GET All Book
-  getAll: (req, res) => {
-    const keyword = req.query.search
-    const sort = req.query.sortby
-    const type = req.query.typeby
-    const available = req.query.available
-    const page = req.query.page || 1
-    const limit = req.query.limit || 10
-    const skip = (Number(page) - 1) * limit
-
-    modelBooks.getAllPromise(keyword, sort, type, available, skip, limit)
-      .then(result => res.json(result))
-      .catch(err => console.log(err))
-  },
-  findOneBook: (req, res) => {
-    const bookid = req.params.bookid
-
-    // Call function promise
-    modelBooks.findOneBookPromise(bookid)
-      .then(result => res.json(result))
-      .catch(err => console.log(err))
-  },
   insertBook: (req, res) => {
     const data = {
       genreid: req.body.genreid,
@@ -35,12 +14,50 @@ module.exports = {
       updated_at: new Date()
     }
 
-    modelBooks.insertBookPromise(data)
-      .then(result => res.json(result))
-      .catch(err => console.log(err))
+    modelBooks.insertBook(data)
+      .then(result => {
+        data.id = result.insertId
+        return responses.dataManipulationResponse(res, 201, 'Success insert data book', data)
+      })
+      .catch(err => {
+        console.error(err)
+        return responses.dataManipulationResponse(res, 500, 'Failed to insert data book', err)
+      })
+  },
+  getAllBook: (req, res) => {
+    const keyword = req.query.search
+    const sort = req.query.sortby
+    const type = req.query.typeby
+    const available = req.query.available
+    const page = req.query.page || 1
+    const limit = req.query.limit || 10
+    const skip = (Number(page) - 1) * limit
+
+    modelBooks.getAllBook(keyword, sort, type, available, skip, limit)
+      .then(result => {
+        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length, page)
+        else return responses.getDataResponse(res, 200, null, null, null, 'Book not found')
+      })
+      .catch(err => {
+        console.error(err)
+        return responses.getDataResponse(res, 500, err)
+      })
+  },
+  getOneBook: (req, res) => {
+    const bookid = req.params.bookid
+
+    modelBooks.getOneBook(bookid)
+      .then(result => {
+        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
+        else return responses.getDataResponse(res, 200, null, null, null, 'Book not found')
+      })
+      .catch(err => {
+        console.log(err)
+        return responses.getDataResponse(res, 500, err)
+      })
   },
   updateBook: (req, res) => {
-    const bookid = req.body.bookid
+    const bookid = req.params.bookid
     const data = {
       genreid: req.body.genreid,
       title: req.body.title,
@@ -50,28 +67,29 @@ module.exports = {
       created_at: new Date()
     }
 
-    modelBooks.updateBookPromise(data, bookid)
-      .then(result => res.json(result))
-      .catch(err => console.log(err))
+    modelBooks.updateBook(data, bookid)
+      .then(result => {
+        data.bookid = bookid
+        if (result.affectedRows !== 0) return responses.dataManipulationResponse(res, 200, 'Success updating book', data)
+        else return responses.dataManipulationResponse(res, 200, 'Failed update', data)
+      })
+      .catch(err => {
+        console.log(err)
+        return responses.getDataResponse(res, 500, err)
+      })
   },
   deleteBook: (req, res) => {
-    const bookid = req.body.bookid
+    const bookid = req.params.bookid
 
-    modelBooks.deleteBookPromise(bookid)
-      .then(result => res.json(result))
-      .catch(err => console.log(err))
-  },
-  getAvailable: (req, res) => {
-    modelBooks.getAvailable()
-      .then(result => res.json(result))
-      .catch(err => console.log(err))
-  },
-  setAvailable: (req, res) => {
-    const bookid = req.body.bookid
-    const available = req.body.available
-
-    modelBooks.setAvailable(bookid, available)
-      .then(result => res.json(result))
-      .catch(err => console.log(err))
+    modelBooks.deleteBook(bookid)
+      .then(result => {
+        result.bookid = bookid
+        if (result.affectedRows !== 0) return responses.dataManipulationResponse(res, 200, 'Success deleting book', result)
+        else return responses.dataManipulationResponse(res, 200, 'Failed delete', result)
+      })
+      .catch(err => {
+        console.log(err)
+        return responses.dataManipulationResponse(res, 500, err)
+      })
   }
 }
