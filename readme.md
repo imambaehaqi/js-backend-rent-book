@@ -38,10 +38,14 @@ $ nano .env
 ```
 
 ```
+SERVER_PORT = YOUR-PORT
+
 DB_HOST = "YOU-DB-HOST"
 DB_USER = "YOUR-DB-USER"
 DB_PASSWORD = "YOUR-DB-PASSWORD"
 DB_NAME = "YOUR-DB-NAME"
+
+JWT_SECRET = "YOUR-SECRET"
 ```
 ### Start Development Server
 ```
@@ -72,11 +76,11 @@ $ npm start
 
 #### PATCH Request
 
- - "/books" => Updating a book in database. data required = bookid, genreid, title, description, image, released.
+ - "/books/{bookid}" => Updating a book in database. data required = bookid, genreid, title, description, image, released.
 
 #### DELETE Request
 
- - "/books" => Deleting a book in database. data required = bookid.
+ - "/books/{bookid}" => Deleting a book in database. data required = bookid.
 
 ### Genres Routes
 
@@ -93,12 +97,12 @@ $ npm start
 
 #### PATCH Request
 
- - "/genres" => Updating a genre in database. data required = genreid, name.
+ - "/genres/{genreid}" => Updating a genre in database. data required = genreid, name.
 
 
 #### DELETE Request
 
- - "/genres" => Deleting a genre in database. data required = genreid.
+ - "/genres/{genreid}" => Deleting a genre in database. data required = genreid.
 
 ### Borrows Routes
 
@@ -119,15 +123,16 @@ $ npm start
 
 #### PATCH Request
  
- - "/borrows" => Updating/return a borrow to database. data required = bookid.
+ - "/borrows/{borrowid}" => Updating/return a borrow to database. data required = bookid.
 
 #### DELETE Request
  
- - "/borrows" => Deleting a borrow to database. data required = bookid.
+ - "/borrows/{borrowid}" => Deleting a borrow to database. data required = bookid.
 
 ## Optional
 
- - Register/Login with JWT
+ - Active app, you most first Register/Login with JWT.
+ - Two level users, regular and admin -> your changed regular to admin at mysql.
 
 
 ### License
