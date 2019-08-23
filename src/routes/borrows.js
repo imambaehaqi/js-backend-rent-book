@@ -7,8 +7,9 @@ const Auth = require('../helpers/auth')
 Route
   .post('/', Auth.verifyTokenHelpers, BorrowController.insertBorrow)
   .get('/', Auth.verifyTokenHelpers, BorrowController.getAllBorrow)
+  .get('/books/:bookid', Auth.verifyTokenHelpers, BorrowController.returnBorrow)
   .get('/:borrowid', Auth.verifyTokenHelpers, BorrowController.getOneBorrow)
-  .patch('/:borrowid', Auth.verifyTokenHelpers, BorrowController.returnBorrow)
+  .patch('/', Auth.verifyTokenHelpers, BorrowController.returnBorrow)
   .delete('/:borrowid', Auth.verifyTokenHelpers, BorrowController.deleteBorrow)
 
 module.exports = Route

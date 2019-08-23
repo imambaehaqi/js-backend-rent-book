@@ -102,5 +102,15 @@ module.exports = {
         console.error(err)
         return responses.dataManipulationResponse(res, 500, err)
       })
+  },
+  getUserProfile: (req, res) => {
+    const userProfile = {
+      userid: req.userid,
+      username: req.username,
+      fullname: req.fullname,
+      email: req.email,
+      level: req.level
+    }
+    return responses.getDataResponse(res, 200, userProfile)
   }
 }

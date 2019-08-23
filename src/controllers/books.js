@@ -91,5 +91,60 @@ module.exports = {
         console.log(err)
         return responses.dataManipulationResponse(res, 500, err)
       })
+  },
+  getTotalBooks: (req, res) => {
+    modelBooks.getTotalBooks()
+      .then(result => {
+        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
+        else return responses.getDataResponse(res, 200, null, null, null, 'Data not found')
+      })
+      .catch(err => {
+        console.error(err)
+        return responses.getDataResponse(res, 500, err)
+      })
+  },
+  getBookPublish: (req, res) => {
+    modelBooks.getBookPublish()
+      .then(result => {
+        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
+        else return responses.getDataResponse(res, 200, null, null, null, 'Books not found')
+      })
+      .catch(err => {
+        console.error(err)
+        return responses.getDataResponse(res, 500, err)
+      })
+  },
+  getBookByPublish: (req, res) => {
+    modelBooks.getBookByPublish(req.params.publish)
+      .then(result => {
+        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
+        else return responses.getDataResponse(res, 200, null, null, null, 'Books not found')
+      })
+      .catch(err => {
+        console.error(err)
+        return responses.getDataResponse(res, 500, err)
+      })
+  },
+  getBookByGenre: (req, res) => {
+    modelBooks.getBookByGenre(req.params.genre)
+      .then(result => {
+        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
+        else return responses.getDataResponse(res, 200, null, null, null, 'Books not found')
+      })
+      .catch(err => {
+        console.error(err)
+        return responses.getDataResponse(res, 500, err)
+      })
+  },
+  getBooksByAvailable: (req, res) => {
+    modelBooks.getBooksByAvailable()
+      .then(result => {
+        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
+        else return responses.getDataResponse(res, 200, null, null, null, 'Books not found')
+      })
+      .catch(err => {
+        console.error(err)
+        return responses.getDataResponse(res, 500, err)
+      })
   }
 }

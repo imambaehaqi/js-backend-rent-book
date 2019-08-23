@@ -10,5 +10,6 @@ Route
   .post('/login', UserController.loginUser)
   .get('/', Auth.verifyTokenHelpers, Auth.verifyAdminPrevilege, UserController.getAllUser)
   .get('/:id', Auth.verifyTokenHelpers, Auth.verifyAdminPrevilege, UserController.getOneUser)
+  .get('/profile', Auth.verifyTokenHelpers, UserController.getUserProfile)
 
 module.exports = Route
