@@ -30,7 +30,7 @@ module.exports = {
     const type = req.query.typeby
     const available = req.query.available
     const page = req.query.page || 1
-    const limit = req.query.limit || 10
+    const limit = req.query.limit || 12
     const skip = (Number(page) - 1) * limit
 
     modelBooks.getAllBook(keyword, sort, type, available, skip, limit)

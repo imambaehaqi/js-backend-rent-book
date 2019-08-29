@@ -63,7 +63,8 @@ module.exports = {
   },
   getBookPublish: () => {
     return new Promise((resolve, reject) => {
-      conn.query('SELECT YEAR(released) AS year FROM tb_books GROUP BY year', (err, result) => {
+      conn.query('SELECT YEAR(released) AS year FROM tb_books GROUP BY year', 
+      (err, result) => {
         if (err) { reject(err) } else { resolve(result) }
       })
     })
@@ -85,7 +86,8 @@ module.exports = {
   },
   getBookByGenre: (genre) => {
     return new Promise((resolve, reject) => {
-      conn.query(`SELECT * FROM tb_books WHERE genreid = ?`, genre, (err, result) => {
+      conn.query(`SELECT * FROM tb_books WHERE genreid = ?`, 
+      genre, (err, result) => {
         if (err) { reject(err) } else { resolve(result) }
       })
     })

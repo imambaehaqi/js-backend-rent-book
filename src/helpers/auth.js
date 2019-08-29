@@ -24,7 +24,7 @@ module.exports = {
       }
     } else { 
       console.error("no bearer", bearerHeader)
-      res.sendStatus(403) }
+      res.sendStatus(403)}
   },
   verifyAdminPrevilege: (req, res, next) => {
     if (req.level === 'admin') { next() } else { res.sendStatus(403) }
