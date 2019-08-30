@@ -9,7 +9,7 @@ module.exports = {
       description: req.body.description,
       image: req.body.image,
       released: req.body.released,
-      available: true,
+      available: 1,
       created_at: new Date(),
       updated_at: new Date()
     }
@@ -17,26 +17,25 @@ module.exports = {
     modelBooks.insertBook(data)
       .then(result => {
         data.id = result.insertId
-        return responses.dataManipulationResponse(res, 201, 'Success insert data book', data)
+        return responses.dataManipulationResponse(res, 201, 'Success insert data', data)
       })
       .catch(err => {
         console.error(err)
-        return responses.dataManipulationResponse(res, 500, 'Failed to insert data book or genre not found')
+        return responses.dataManipulationResponse(res, 500, 'Failed to insert data', err)
       })
   },
   getAllBook: (req, res) => {
     const keyword = req.query.search
     const sort = req.query.sortby
-    const type = req.query.typeby
     const available = req.query.available
     const page = req.query.page || 1
     const limit = req.query.limit || 12
     const skip = (Number(page) - 1) * limit
 
-    modelBooks.getAllBook(keyword, sort, type, available, skip, limit)
+    modelBooks.getAllBook(keyword, sort, available, skip, limit)
       .then(result => {
         if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length, page)
-        else return responses.getDataResponse(res, 200, null, null, null, 'Book not found')
+        else return responses.getDataResponse(res, 404, null, null, null, 'Book not found')
       })
       .catch(err => {
         console.error(err)
@@ -49,10 +48,65 @@ module.exports = {
     modelBooks.getOneBook(bookid)
       .then(result => {
         if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
-        else return responses.getDataResponse(res, 200, null, null, null, 'Book not found')
+        else return responses.getDataResponse(res, 404, null, null, null, 'Book not found')
       })
       .catch(err => {
         console.log(err)
+        return responses.getDataResponse(res, 500, err)
+      })
+  },
+  getTotalBooks: (req, res) => {
+    modelBooks.getTotalBooks()
+      .then(result => {
+        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
+        else return responses.getDataResponse(res, 404, null, null, null, 'Data not found')
+      })
+      .catch(err => {
+        console.error(err)
+        return responses.getDataResponse(res, 500, err)
+      })
+  },
+  getBookPublish: (req, res) => {
+    modelBooks.getBookPublish()
+      .then(result => {
+        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
+        else return responses.getDataResponse(res, 404, null, null, null, 'Books not found')
+      })
+      .catch(err => {
+        console.error(err)
+        return responses.getDataResponse(res, 500, err)
+      })
+  },
+  getBookByPublish: (req, res) => {
+    modelBooks.getBookByPublishs(req.params.publish)
+      .then(result => {
+        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
+        else return responses.getDataResponse(res, 404, null, null, null, 'Books not found')
+      })
+      .catch(err => {
+        console.error(err)
+        return responses.getDataResponse(res, 500, err)
+      })
+  },
+  getBookByGenre: (req, res) => {
+    modelBooks.getBookByGenre(req.params.genre)
+      .then(result => {
+        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
+        else return responses.getDataResponse(res, 404, null, null, null, 'Books not found')
+      })
+      .catch(err => {
+        console.error(err)
+        return responses.getDataResponse(res, 500, err)
+      })
+  },
+  getBooksByAvailable: (req, res) => {
+    modelBooks.getBooksByAvailable()
+      .then(result => {
+        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
+        else return responses.getDataResponse(res, 404, null, null, null, 'Books not found')
+      })
+      .catch(err => {
+        console.error(err)
         return responses.getDataResponse(res, 500, err)
       })
   },
@@ -71,7 +125,7 @@ module.exports = {
       .then(result => {
         data.bookid = bookid
         if (result.affectedRows !== 0) return responses.dataManipulationResponse(res, 200, 'Success updating book', data)
-        else return responses.dataManipulationResponse(res, 200, 'Failed update', data)
+        else return responses.dataManipulationResponse(res, 404, 'Failed update', data)
       })
       .catch(err => {
         console.log(err)
@@ -85,66 +139,11 @@ module.exports = {
       .then(result => {
         result.bookid = bookid
         if (result.affectedRows !== 0) return responses.dataManipulationResponse(res, 200, 'Success deleting book')
-        else return responses.dataManipulationResponse(res, 200, 'Failed delete, data not found')
+        else return responses.dataManipulationResponse(res, 404, 'Failed delete, data not found')
       })
       .catch(err => {
         console.log(err)
         return responses.dataManipulationResponse(res, 500, err)
-      })
-  },
-  getTotalBooks: (req, res) => {
-    modelBooks.getTotalBooks()
-      .then(result => {
-        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
-        else return responses.getDataResponse(res, 200, null, null, null, 'Data not found')
-      })
-      .catch(err => {
-        console.error(err)
-        return responses.getDataResponse(res, 500, err)
-      })
-  },
-  getBookPublish: (req, res) => {
-    modelBooks.getBookPublish()
-      .then(result => {
-        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
-        else return responses.getDataResponse(res, 200, null, null, null, 'Books not found')
-      })
-      .catch(err => {
-        console.error(err)
-        return responses.getDataResponse(res, 500, err)
-      })
-  },
-  getBookByPublish: (req, res) => {
-    modelBooks.getBookByPublish(req.params.publish)
-      .then(result => {
-        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
-        else return responses.getDataResponse(res, 200, null, null, null, 'Books not found')
-      })
-      .catch(err => {
-        console.error(err)
-        return responses.getDataResponse(res, 500, err)
-      })
-  },
-  getBookByGenre: (req, res) => {
-    modelBooks.getBookByGenre(req.params.genre)
-      .then(result => {
-        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
-        else return responses.getDataResponse(res, 200, null, null, null, 'Books not found')
-      })
-      .catch(err => {
-        console.error(err)
-        return responses.getDataResponse(res, 500, err)
-      })
-  },
-  getBooksByAvailable: (req, res) => {
-    modelBooks.getBooksByAvailable()
-      .then(result => {
-        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
-        else return responses.getDataResponse(res, 200, null, null, null, 'Books not found')
-      })
-      .catch(err => {
-        console.error(err)
-        return responses.getDataResponse(res, 500, err)
       })
   }
 }

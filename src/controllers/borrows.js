@@ -74,5 +74,30 @@ module.exports = {
         console.error(err)
         return responses.dataManipulationResponse(res, 500, err)
       })
+  },
+  /////
+  getLatestBorrowingByBookId: (req, res) => {
+    const borrowid = req.params.borrowid
+    modelBorrowings.getLatestBorrowingByBookId(borrowid)
+      .then(result => {
+        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
+        else return responses.getDataResponse(res, 404, null, null, null, 'Borrowing data not found')
+      })
+      .catch(err => {
+        console.error(err)
+        return responses(res, 500, err)
+      })
+  },
+  getBorrowsHistoryByUserId: (req, res) => {
+    const borrowid = req.params.borrowid
+    modelBorrowings.getBorrowsHistoryByUserId(borrowid)
+      .then(result => {
+        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
+        else return responses.getDataResponse(res, 404, null, null, null, 'Borrowing data not found')
+      })
+      .catch(err => {
+        console.error(err)
+        return responses(res, 500, err)
+      })
   }
 }

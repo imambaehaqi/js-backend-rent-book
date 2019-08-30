@@ -9,15 +9,7 @@ module.exports = {
         })
     })
   },
-  getOneBook: (bookid) => {
-    return new Promise((resolve, reject) => {
-      conn.query(`SELECT * FROM tb_books WHERE bookid = ${bookid}`,
-        (err, result) => {
-          if (!err) { resolve(result) } else { reject(err) }
-        })
-    })
-  },
-  getAllBook: (keyword = null, sort = null, type, available = null, skip, limit) => {
+  getAllBook: (keyword = null, sort = null, available = null, skip, limit) => {
     return new Promise((resolve, reject) => {
       let query = 'SELECT * FROM tb_books '
 
@@ -33,7 +25,32 @@ module.exports = {
       if (sort != null) {
         query += `ORDER BY ${sort} `
       }
-      conn.query(query + `LIMIT ${skip}, ${limit}`, (err, result) => {
+      conn.query(query + `LIMIT ${skip}, ${limit}`, 
+      (err, result) => {
+        if (err) { reject(err) } else { resolve(result) }
+      })
+    })
+  },
+  getOneBook: (bookid) => {
+    return new Promise((resolve, reject) => {
+      conn.query(`SELECT * FROM tb_books WHERE bookid = ${bookid}`,
+        (err, result) => {
+          if (!err) { resolve(result) } else { reject(err) }
+        })
+    })
+  },
+  getTotalBooks: () => {
+    return new Promise((resolve, reject) => {
+      conn.query('SELECT `TABLE_ROWS` AS total FROM `INFORMATION_SCHEMA`.`TABLES` WHERE `TABLE_SCHEMA` = "db_rent-book" AND `TABLE_NAME` = "tb_books"', 
+      (err, result) => {
+        if (err) { reject(err) } else { resolve(result) }
+      })
+    })
+  },
+  getBookPublishs: () => {
+    return new Promise((resolve, reject) => {
+      conn.query('SELECT YEAR(released) AS year FROM tb_books GROUP BY year', 
+      (err, result) => {
         if (err) { reject(err) } else { resolve(result) }
       })
     })
@@ -53,17 +70,9 @@ module.exports = {
         })
     })
   },
-  getTotalBooks: () => {
+  getBookByGenre: (genre) => {
     return new Promise((resolve, reject) => {
-      conn.query('SELECT `TABLE_ROWS` AS total FROM `INFORMATION_SCHEMA`.`TABLES` WHERE `TABLE_SCHEMA` = "db_rent-book" AND `TABLE_NAME` = "tb_books"', 
-      (err, result) => {
-        if (err) { reject(err) } else { resolve(result) }
-      })
-    })
-  },
-  getBookPublish: () => {
-    return new Promise((resolve, reject) => {
-      conn.query('SELECT YEAR(released) AS year FROM tb_books GROUP BY year', 
+      conn.query(`SELECT * FROM tb_books WHERE genreid = ?`, genre, 
       (err, result) => {
         if (err) { reject(err) } else { resolve(result) }
       })
@@ -83,13 +92,5 @@ module.exports = {
         if (err) { reject(err) } else { resolve(result) }
       })
     })
-  },
-  getBookByGenre: (genre) => {
-    return new Promise((resolve, reject) => {
-      conn.query(`SELECT * FROM tb_books WHERE genreid = ?`, 
-      genre, (err, result) => {
-        if (err) { reject(err) } else { resolve(result) }
-      })
-    })
-  },
+  }
 }

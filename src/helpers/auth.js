@@ -1,5 +1,4 @@
 require('dotenv').config()
-
 module.exports = {
   verifyTokenHelpers: (req, res, next) => {
     const bearerHeader = req.headers['authorization']

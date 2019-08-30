@@ -6,7 +6,7 @@ const isFormValid = (data) => {
   const Joi = require('@hapi/joi')
   const schema = Joi.object().keys({
     username: Joi.string().alphanum().min(3).max(30).required(),
-    fullname: Joi.string().min(10).max(40).required(),
+    fullname: Joi.string().required(),
     password: Joi.string().min(8).required(),
     email: Joi.string().email({ minDomainSegments: 2 }),
     level: Joi.string()
@@ -68,9 +68,9 @@ module.exports = {
       })
   },
   getOneUser: (req, res) => {
-    const id = req.params.id
+    const userid = req.params.userid
 
-    modelUsers.getOneUser(id)
+    modelUsers.getOneUser(userid)
       .then(result => {
         if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length, null)
         else return responses.getDataResponse(res, 400, null, null, null, 'User not found')
@@ -91,6 +91,8 @@ module.exports = {
           const jwt = require('jsonwebtoken')
           const payload = {
             userid: result[0].userid,
+            username: result[0].username,
+            fullname: result[0].fullname,
             email: result[0].email,
             level: result[0].level
           }

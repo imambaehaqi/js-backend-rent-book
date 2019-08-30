@@ -26,7 +26,7 @@ module.exports = {
         })
     })
   },
-  getAllBorrow: (keyword = null, sort = null, type, rentbook = null, skip, limit) => {
+  getAllBorrow: (keyword = null, sort = null, rentbook = null, skip, limit) => {
     return new Promise((resolve, reject) => {
       let query = 'SELECT * FROM tb_borrows '
 
@@ -35,10 +35,11 @@ module.exports = {
 
       if (rentBookNotNull || keywordNotNull) {
         query += `WHERE `
-        query += rentBookNotNull ? `return_at IS ` : ``
-        query += rentBookNotNull && rentbook === 'returned' ? 'NOT NULL ' : 'NULL '
-        query += rentBookNotNull && keywordNotNull ? `AND ` : ``
         query += keywordNotNull ? `title LIKE '%${keyword}%' ` : ''
+        query += rentBookNotNull && keywordNotNull ? `AND ` : ``
+        query += rentBookNotNull ? `return_at IS ` : ``
+        query += rentBookNotNull && rentbook === 'returned' ? 'NOT NULL ' : ''
+        query += rentBookNotNull && rentbook === 'borrowed' ? 'NULL ' : ''
       }
       if (sort != null) { query += `ORDER BY ${sort} ` }
 
@@ -72,6 +73,22 @@ module.exports = {
               })
           } else { reject(err) }
         })
+    })
+  },
+  getLatestBorrowingByBookId: (borrowid) => {
+    return new Promise((resolve, reject) => {
+      conn.query('SELECT * FROM tb_borrows WHERE bookid = ? AND return_at IS NULL', borrowid, 
+      (err, result) => {
+        if (err) { reject(err) } else { resolve(result) }
+      })
+    })
+  },
+  getBorrowsHistoryByUserId: (borrowid) => {
+    return new Promise((resolve, reject) => {
+      conn.query('SELECT * FROM tb_borrows JOIN `tb_books` ON tb_books.bookid = tb_borrows.bookid WHERE tb_borrows.userid = ? GROUP BY tb_books.bookid', 
+      borrowid, (err, result) => {
+        if (err) { reject(err) } else { resolve(result) }
+      })
     })
   },
   deleteBorrow: (bookid) => {

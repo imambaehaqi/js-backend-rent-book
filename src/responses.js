@@ -1,16 +1,14 @@
 module.exports = {
-  getDataResponse: (res, statuscode, values, totalvalues, page, message) => {
-    return res.json({
-      status: statuscode,
+  getDataResponse: (res, statusCode, values, totalValues, page, message) => {
+    return res.status(statusCode).json({
       data: values,
-      total: totalvalues,
+      total: totalValues,
       page: page,
       message: message
     })
   },
-  dataManipulationResponse: (res, statuscode, message, values) => {
-    return res.json({
-      status: statuscode,
+  dataManipulationResponse: (res, statusCode, message, values) => {
+    return res.status(statusCode).json({
       message: message,
       data: values
     })
