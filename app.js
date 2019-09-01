@@ -11,10 +11,10 @@ const genreRoute = require('./src/routes/genres')
 const borrowRoute = require('./src/routes/borrows')
 const userRoute = require('./src/routes/users')
 
-const port = process.env.SERVER_PORT || 5000
+const PORT = process.env.PORT
 
-app.listen(port,'0.0.0.0', () => {
-  console.log(`Server is running on Port ${port}`)
+app.listen(PORT,'0.0.0.0', () => {
+  console.log(`Server is running on PORT ${PORT}`)
 })
 
 // user controllers input
