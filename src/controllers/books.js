@@ -67,7 +67,7 @@ module.exports = {
       })
   },
   getBookPublish: (req, res) => {
-    modelBooks.getBookPublish()
+    modelBooks.getBookPublishs()
       .then(result => {
         if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
         else return responses.getDataResponse(res, 404, null, null, null, 'Books not found')
@@ -78,7 +78,7 @@ module.exports = {
       })
   },
   getBookByPublish: (req, res) => {
-    modelBooks.getBookByPublishs(req.params.publish)
+    modelBooks.getBookByPublish(req.params.publish)
       .then(result => {
         if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
         else return responses.getDataResponse(res, 404, null, null, null, 'Books not found')
@@ -113,11 +113,11 @@ module.exports = {
   updateBook: (req, res) => {
     const bookid = req.params.bookid
     const data = {
-      genreid: req.body.genreid,
       title: req.body.title,
       description: req.body.description,
       image: req.body.image,
       released: req.body.released,
+      genreid: req.body.genreid,
       created_at: new Date()
     }
 
