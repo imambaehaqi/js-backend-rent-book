@@ -5,10 +5,10 @@ const GenreController = require('../controllers/genres')
 const Auth = require('../helpers/auth')
 
 Route
-  .post('/', Auth.verifyTokenHelpers, Auth.verifyAdminPrevilege, GenreController.insertGenre)
-  .get('/', GenreController.getAllGenre)
-  .get('/:genreid', GenreController.getOneGenre)
-  .patch('/:genreid', Auth.verifyTokenHelpers, Auth.verifyAdminPrevilege, GenreController.updateGenre)
-  .delete('/:genreid', Auth.verifyTokenHelpers, Auth.verifyAdminPrevilege, GenreController.deleteGenre)
+  .post('/', Auth.verifyTokenHelpers, Auth.verifyAdminPrevilege, GenreController.insertGenres)
+  .get('/', GenreController.getAllGenres)
+  .get('/:id', GenreController.getOneGenre)
+  .patch('/:id', Auth.verifyTokenHelpers, Auth.verifyAdminPrevilege, GenreController.updateGenres)
+  .delete('/:id', Auth.verifyTokenHelpers, Auth.verifyAdminPrevilege, GenreController.deleteGenres)
 
 module.exports = Route

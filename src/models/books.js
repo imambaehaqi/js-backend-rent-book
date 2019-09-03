@@ -1,94 +1,109 @@
 const conn = require('../configs/db')
 
+const books_list = 'select `books`.`id` AS `id`,`books`.`title` AS `title`,`books`.`description` AS `description`,`books`.`image` AS `image`,`books`.`date_released` AS `date_released`,`books`.`availability` AS `availability`,`genres`.`id` AS `genre_id`,`genres`.`name` AS `genre` from (`books` join `genres` on((`books`.`genre_id` = `genres`.`id`))) '
+
 module.exports = {
   insertBook: (data) => {
     return new Promise((resolve, reject) => {
-      conn.query('INSERT tb_books SET ?', data,
-        (err, result) => {
-          if (!err) { resolve(result) } else { reject(err) }
-        })
-    })
-  },
-  getAllBook: (keyword = null, sort = null, available = null, skip, limit) => {
-    return new Promise((resolve, reject) => {
-      let query = 'SELECT * FROM tb_books '
-
-      const availableNotNull = available != null
-      const keywordNotNull = keyword != null
-
-      if (availableNotNull || keywordNotNull) {
-        query += `WHERE `
-        query += availableNotNull ? `available = ${available} ` : ``
-        query += availableNotNull && keywordNotNull ? `AND ` : ``
-        query += keywordNotNull ? `title LIKE '%${keyword}%' ` : ''
-      }
-      if (sort != null) {
-        query += `ORDER BY ${sort} `
-      }
-      conn.query(query + `LIMIT ${skip}, ${limit}`, 
-      (err, result) => {
+      conn.query('INSERT books SET ?', data, (err, result) => {
         if (err) { reject(err) } else { resolve(result) }
       })
     })
   },
-  getOneBook: (bookid) => {
+  getAllBook: (keyword = null, sort = 'title', availability = null, start, limit) => {
     return new Promise((resolve, reject) => {
-      conn.query(`SELECT * FROM tb_books WHERE bookid = ${bookid}`,
-        (err, result) => {
-          if (!err) { resolve(result) } else { reject(err) }
-        })
+      let query = books_list
+
+      const availabilityIsNotNull = availability != null
+      const keywordIsNotNull = keyword != null
+
+      if (availabilityIsNotNull || keywordIsNotNull) {
+        query += `WHERE `
+        query += availabilityIsNotNull ? `availability = ${availability} ` : ``
+        query += availabilityIsNotNull && keywordIsNotNull ? `AND ` : ``
+        query += keywordIsNotNull ? `title LIKE '%${keyword}%' ` : ''
+      }
+
+      query += sort != null ? `ORDER BY ${sort} ` : ''
+
+      conn.query(query + `LIMIT ${start}, ${limit}`, (err, result) => {
+        if (err) { reject(err) } else { resolve(result) }
+      })
+    })
+  },
+  getOneBook: (id) => {
+    return new Promise((resolve, reject) => {
+      conn.query(books_list + ' WHERE books.id = ?', id, (err, result) => {
+        if (err) { reject(err) } else { resolve(result) }
+      })
     })
   },
   getTotalBooks: () => {
     return new Promise((resolve, reject) => {
-      conn.query('SELECT `TABLE_ROWS` AS total FROM `INFORMATION_SCHEMA`.`TABLES` WHERE `TABLE_SCHEMA` = "db_rent-book" AND `TABLE_NAME` = "tb_books"', 
-      (err, result) => {
+      conn.query('SELECT `TABLE_ROWS` AS total FROM `INFORMATION_SCHEMA`.`TABLES` WHERE `TABLE_SCHEMA` = "rent-books" AND `TABLE_NAME` = "books"', (err, result) => {
         if (err) { reject(err) } else { resolve(result) }
       })
     })
   },
-  getBookPublishs: () => {
+  getBookYears: () => {
     return new Promise((resolve, reject) => {
-      conn.query('SELECT YEAR(released) AS year FROM tb_books GROUP BY year', 
-      (err, result) => {
+      conn.query('SELECT YEAR(date_released) AS year FROM books GROUP BY year', (err, result) => {
         if (err) { reject(err) } else { resolve(result) }
       })
     })
   },
-  updateBook: (data, bookid) => {
+  getBookGenres: () => {
     return new Promise((resolve, reject) => {
-      conn.query('UPDATE tb_books SET ? WHERE bookid = ?', [data, bookid], (err, result) => {
-        if (!err) { resolve(result) } else { reject(err) }
+      conn.query('SELECT genres.name AS genre FROM genres WHERE genres.id IN (SELECT books.genre_id FROM books GROUP BY books.genre_id)', (err, result) => {
+        if (err) { reject(err) } else { resolve(result) }
       })
     })
   },
-  deleteBook: (data) => {
+  getNewestBooks: () => {
     return new Promise((resolve, reject) => {
-      conn.query(`DELETE FROM tb_books WHERE bookid = ${data}`,
-        (err, result) => {
-          if (!err) { resolve(result) } else { reject(err) }
-        })
+      conn.query(books_list + `ORDER BY books.created_at DESC LIMIT 5`, (err, result) => {
+        if (err) { reject(err) } else { resolve(result) }
+      })
+    })
+  },
+  getBookByYear: (year) => {
+    return new Promise((resolve, reject) => {
+      conn.query(`${books_list} WHERE YEAR(date_released) = ${year}`, (err, result) => {
+        if (err) { reject(err) } else { resolve(result) }
+      })
     })
   },
   getBookByGenre: (genre) => {
     return new Promise((resolve, reject) => {
-      conn.query(`SELECT * FROM tb_books WHERE genreid = ?`, genre, 
-      (err, result) => {
+      conn.query(`${books_list} WHERE genres.name = ?`, genre, (err, result) => {
         if (err) { reject(err) } else { resolve(result) }
       })
     })
   },
-  getBooksByAvailable: () => {
+  updateBook: (id, data) => {
     return new Promise((resolve, reject) => {
-      conn.query('SELECT tb_books.bookid, tb_books.title, tb_books.image, tb_books.available, COUNT(tb_books.bookid) AS available FROM `tb_borrows` JOIN tb_books ON tb_books.bookid = tb_books.bookid WHERE tb_books.available = 1 GROUP BY bookid ORDER BY available DESC LIMIT 5', 
-      (err, result) => {
+      conn.query('UPDATE books SET ? WHERE id = ?', [data, id], (err, result) => {
         if (err) { reject(err) } else { resolve(result) }
       })
     })
   },
-  getBookByPublish: (year) => {
+  setAvailability: (id, availability) => {
     return new Promise((resolve, reject) => {
-      conn.query(`SELECT * FROM tb_books WHERE YEAR(released) = ${year}`, (err, result) => {
+      conn.query('UPDATE books SET availability = ? where id = ?', [availability, id], (err, result) => {
+        if (err) { reject(err) } else { resolve(result) }
+      })
+    })
+  },
+  getAvailability: (id) => {
+    return new Promise((resolve, reject) => {
+      conn.query('SELECT availability FROM books WHERE id = ?', id, (err, result) => {
+        if (err) { reject(err) } else { resolve(result) }
+      })
+    })
+  },
+  deleteBook: (id) => {
+    return new Promise((resolve, reject) => {
+      conn.query('DELETE FROM books WHERE id = ?', id, (err, result) => {
         if (err) { reject(err) } else { resolve(result) }
       })
     })

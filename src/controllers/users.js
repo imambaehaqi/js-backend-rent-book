@@ -5,14 +5,13 @@ const responses = require('../responses')
 const isFormValid = (data) => {
   const Joi = require('@hapi/joi')
   const schema = Joi.object().keys({
-    username: Joi.string().alphanum().min(3).max(30).required(),
     fullname: Joi.string().required(),
+    username: Joi.string().alphanum().min(3).max(30).required(),
     password: Joi.string().min(8).required(),
     email: Joi.string().email({ minDomainSegments: 2 }),
     level: Joi.string()
   })
   const result = Joi.validate(data, schema)
-  console.log(result.error)
   if (result.error == null) return true
   else return false
 }
@@ -25,72 +24,70 @@ const hash = (string) => {
 
 module.exports = {
   registerUser: (req, res) => {
-    const data = {
-      username: req.body.username,
+    const userData = {
       fullname: req.body.fullname,
+      username: req.body.username,
       password: req.body.password,
       email: req.body.email,
       level: 'regular'
     }
 
-    if (!isFormValid(data)) {
+    if (!isFormValid(userData)) {
       return responses.dataManipulationResponse(res, 400, 'Data is not valid')
     }
 
-    data.password = hash(data.password)
+    userData.password = hash(userData.password)
 
-    modelUsers.getAllUserWithEmailorUsername(data.email, data.username)
+    modelUsers.getAllUsersWithEmailOrUsername(userData.email, userData.username)
       .then(result => {
-        if (result.length === 0) return modelUsers.registerUser(data)
-        else return responses.dataManipulationResponse(res, 400, 'Username or email already registered')
+        if (result.length === 0) return modelUsers.registerUser(userData)
+        else return responses.dataManipulationResponse(res, 409, 'Username or email already registered')
       })
-      .then(result => responses.dataManipulationResponse(res, 201, 'Success registering new user', { userid: result.insertId, username: data.username }))
-      .catch(err => {
-        console.error(err)
-        return responses.dataManipulationResponse(res, 400, 'Failed register', err)
-      })
-  },
-  getAllUser: (req, res) => {
-    const keyword = req.query.search
-    const sort = req.query.sortby
-    const page = req.query.page || 1
-    const limit = req.query.limit || 10
-    const skip = (Number(page) - 1) * limit
-
-    modelUsers.getAllUser(keyword, sort, skip, limit)
       .then(result => {
-        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length, null)
-        else return responses.getDataResponse(res, 400, null, null, null, 'All users not found')
+        console.log(result)
+        return responses.dataManipulationResponse(res, 200, 'Success registering new user', { id: result.insertId, username: userData.username })
       })
       .catch(err => {
         console.error(err)
-        return responses.getDataResponse(res, 500, err)
+        return responses.dataManipulationResponse(res, 500, 'Failed registering user', err)
       })
   },
-  getOneUser: (req, res) => {
-    const userid = req.params.userid
+  registerAdmin: (req, res) => {
+    const userData = {
+      fullname: req.body.fullname,
+      username: req.body.username,
+      password: req.body.password,
+      email: req.body.email,
+      level: 'admin'
+    }
 
-    modelUsers.getOneUser(userid)
+    if (!isFormValid(userData)) {
+      return res.json({ message: 'user data not valid' })
+    }
+
+    userData.password = hash(userData.password)
+
+    modelUsers.getAllUsersWithEmailOrUsername(userData.email, userData.username)
       .then(result => {
-        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length, null)
-        else return responses.getDataResponse(res, 400, null, null, null, 'User not found')
+        if (result.length === 0) return modelUsers.registerUser(userData)
+        else return responses.dataManipulationResponse(res, 409, 'Username or email already registered')
       })
+      .then(result => responses.dataManipulationResponse(res, 201, 'Success registering new user', { id: result[0].insertId, username: userData.username }))
       .catch(err => {
         console.error(err)
-        return responses.getDataResponse(res, 500, err)
+        return responses.dataManipulationResponse(res, 500, 'Failed registering user', err)
       })
   },
-  loginUser: (req, res) => {
+  login: (req, res) => {
     const email = req.body.email
     const hashedPassword = hash(req.body.password)
-    console.log(hashedPassword)
-    modelUsers.loginUser(email, hashedPassword)
+
+    modelUsers.login(email, hashedPassword)
       .then(result => {
         if (result.length !== 0) {
-          console.log(result)
           const jwt = require('jsonwebtoken')
           const payload = {
-            userid: result[0].userid,
+            id: result[0].id,
             username: result[0].username,
             fullname: result[0].fullname,
             email: result[0].email,
@@ -102,19 +99,49 @@ module.exports = {
             }
             res.json({ token: `Bearer ${token}` })
           })
-        } else { return responses.dataManipulationResponse(res, 400, 'Username or email is wrong') }
+        } else { return responses.dataManipulationResponse(res, 404, 'Email or password is wrong') }
       })
       .catch(err => {
         console.error(err)
         return responses.dataManipulationResponse(res, 500, err)
       })
   },
+  getAllUsers: (req, res) => {
+    const keyword = req.query.search
+    const sort = req.query.sortby
+    const page = req.query.page || 1
+    const limit = req.query.limit || 10
+    const start = (Number(page) - 1) * limit
+
+    modelUsers.getAllUsers(keyword, sort, start, limit)
+      .then(result => {
+        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length, null)
+        else return responses.getDataResponse(res, 404, null, null, null, 'No users found')
+      })
+      .catch(err => {
+        console.error(err)
+        return responses.getDataResponse(res, 500, err)
+      })
+  },
+  getOneUser: (req, res) => {
+    const id = req.params.id
+
+    modelUsers.getOneUser(id)
+      .then(result => {
+        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length, null)
+        else return responses.getDataResponse(res, 404, null, null, null, 'No users found')
+      })
+      .catch(err => {
+        console.error(err)
+        return responses.getDataResponse(res, 500, err)
+      })
+  },
   getUserProfile: (req, res) => {
     const userProfile = {
-      userid: req.userid,
-      username: req.username,
-      fullname: req.fullname,
-      email: req.email,
+      id: req.user_id,
+      username: req.user_name,
+      fullname: req.user_fullname,
+      email: req.user_email,
       level: req.level
     }
     return responses.getDataResponse(res, 200, userProfile)

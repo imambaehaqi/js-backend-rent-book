@@ -4,20 +4,20 @@ const responses = require('../responses')
 module.exports = {
   insertBook: (req, res) => {
     const data = {
-      genreid: req.body.genreid,
       title: req.body.title,
       description: req.body.description,
       image: req.body.image,
-      released: req.body.released,
-      available: 1,
+      date_released: req.body.date_released,
+      genre_id: req.body.genre_id,
+      availability: 1,
       created_at: new Date(),
-      updated_at: new Date()
+      Updated_at: new Date()
     }
 
     modelBooks.insertBook(data)
       .then(result => {
         data.id = result.insertId
-        return responses.dataManipulationResponse(res, 201, 'Success insert data', data)
+        return responses.dataManipulationResponse(res, 201, 'Success inserting data', data)
       })
       .catch(err => {
         console.error(err)
@@ -27,12 +27,12 @@ module.exports = {
   getAllBook: (req, res) => {
     const keyword = req.query.search
     const sort = req.query.sortby
-    const available = req.query.available
+    const availability = req.query.availability
     const page = req.query.page || 1
     const limit = req.query.limit || 12
-    const skip = (Number(page) - 1) * limit
+    const start = (Number(page) - 1) * limit
 
-    modelBooks.getAllBook(keyword, sort, available, skip, limit)
+    modelBooks.getAllBook(keyword, sort, availability, start, limit)
       .then(result => {
         if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length, page)
         else return responses.getDataResponse(res, 404, null, null, null, 'Book not found')
@@ -43,15 +43,14 @@ module.exports = {
       })
   },
   getOneBook: (req, res) => {
-    const bookid = req.params.bookid
-
-    modelBooks.getOneBook(bookid)
+    const id = req.params.id
+    modelBooks.getOneBook(id)
       .then(result => {
         if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
         else return responses.getDataResponse(res, 404, null, null, null, 'Book not found')
       })
       .catch(err => {
-        console.log(err)
+        console.error(err)
         return responses.getDataResponse(res, 500, err)
       })
   },
@@ -66,8 +65,8 @@ module.exports = {
         return responses.getDataResponse(res, 500, err)
       })
   },
-  getBookPublish: (req, res) => {
-    modelBooks.getBookPublishs()
+  getBookYears: (req, res) => {
+    modelBooks.getBookYears()
       .then(result => {
         if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
         else return responses.getDataResponse(res, 404, null, null, null, 'Books not found')
@@ -77,8 +76,19 @@ module.exports = {
         return responses.getDataResponse(res, 500, err)
       })
   },
-  getBookByPublish: (req, res) => {
-    modelBooks.getBookByPublish(req.params.publish)
+  getBookGenres: (req, res) => {
+    modelBooks.getBookGenres()
+      .then(result => {
+        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
+        else return responses.getDataResponse(res, 404, null, null, null, 'Books not found')
+      })
+      .catch(err => {
+        console.error(err)
+        return responses.getDataResponse(res, 500, err)
+      })
+  },
+  getBookByYear: (req, res) => {
+    modelBooks.getBookByYear(req.params.year)
       .then(result => {
         if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
         else return responses.getDataResponse(res, 404, null, null, null, 'Books not found')
@@ -99,8 +109,8 @@ module.exports = {
         return responses.getDataResponse(res, 500, err)
       })
   },
-  getBooksByAvailable: (req, res) => {
-    modelBooks.getBooksByAvailable()
+  getNewestBooks: (req, res) => {
+    modelBooks.getNewestBooks()
       .then(result => {
         if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
         else return responses.getDataResponse(res, 404, null, null, null, 'Books not found')
@@ -111,39 +121,43 @@ module.exports = {
       })
   },
   updateBook: (req, res) => {
-    const bookid = req.params.bookid
+    const id = req.params.id
     const data = {
       title: req.body.title,
       description: req.body.description,
       image: req.body.image,
-      released: req.body.released,
-      genreid: req.body.genreid,
-      created_at: new Date()
+      date_released: req.body.date_released,
+      genre_id: req.body.genre_id,
+      Updated_at: new Date()
     }
 
-    modelBooks.updateBook(data, bookid)
+    modelBooks.updateBook(id, data)
       .then(result => {
-        data.bookid = bookid
-        if (result.affectedRows !== 0) return responses.dataManipulationResponse(res, 200, 'Success updating book', data)
-        else return responses.dataManipulationResponse(res, 404, 'Failed update', data)
+        data.id = id
+        if (result.affectedRows !== 0) { return modelBooks.getOneBook(id) } else { return responses.dataManipulationResponse(res, 400, 'Failed to update', data) }
+      })
+      .then(result => {
+        console.log(result)
+        if (result.length !== 0) responses.dataManipulationResponse(res, 200, 'Success updating data', result)
+        else return responses.dataManipulationResponse(res, 400, 'please refresh', data)
       })
       .catch(err => {
-        console.log(err)
+        console.error(err)
         return responses.getDataResponse(res, 500, err)
       })
   },
   deleteBook: (req, res) => {
-    const bookid = req.params.bookid
+    const id = req.params.id
 
-    modelBooks.deleteBook(bookid)
+    modelBooks.deleteBook(id)
       .then(result => {
-        result.bookid = bookid
-        if (result.affectedRows !== 0) return responses.dataManipulationResponse(res, 200, 'Success deleting book')
-        else return responses.dataManipulationResponse(res, 404, 'Failed delete, data not found')
+        result.id = id
+        if (result.affectedRows !== 0) return responses.dataManipulationResponse(res, 200, 'Success deleting data', result)
+        else return responses.dataManipulationResponse(res, 400, 'Failed to delete', result)
       })
       .catch(err => {
-        console.log(err)
-        return responses.dataManipulationResponse(res, 500, err)
+        console.error(err)
+        return responses.getDataResponse(res, 500, err)
       })
   }
 }

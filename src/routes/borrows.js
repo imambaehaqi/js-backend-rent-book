@@ -5,12 +5,12 @@ const BorrowController = require('../controllers/borrows')
 const Auth = require('../helpers/auth')
 
 Route
-  .post('/', Auth.verifyTokenHelpers, BorrowController.insertBorrow)
-  .get('/', Auth.verifyTokenHelpers, BorrowController.getAllBorrow)
-  .get('/book/:bookid', Auth.verifyTokenHelpers, BorrowController.returnBorrow)
-  .get('/history/:borrowid', Auth.verifyTokenHelpers, BorrowController.getBorrowsHistoryByUserId)
-  .get('/:borrowid', Auth.verifyTokenHelpers, BorrowController.getOneBorrow)
-  .patch('/', Auth.verifyTokenHelpers, BorrowController.returnBorrow)
-  .delete('/:borrowid', Auth.verifyTokenHelpers, BorrowController.deleteBorrow)
+  .post('/', Auth.verifyTokenHelpers, Auth.verifyAdminPrevilege, BorrowController.insertBorrowing)
+  .get('/', Auth.verifyTokenHelpers, BorrowController.getAllBorrowing)
+  .get('/history/', Auth.verifyTokenHelpers, BorrowController.getBorrowingsHistory)
+  .get('/book/:id', Auth.verifyTokenHelpers, BorrowController.getLatestBorrowingByBookId)
+  .get('/:id', Auth.verifyTokenHelpers, BorrowController.getOneBorrowing)
+  .patch('/', Auth.verifyTokenHelpers, BorrowController.returningBook)
+  .delete('/:id', Auth.verifyTokenHelpers, BorrowController.deleteBorrowing)
 
 module.exports = Route

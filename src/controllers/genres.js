@@ -2,21 +2,22 @@ const modelGenres = require('../models/genres')
 const responses = require('../responses')
 
 module.exports = {
-  insertGenre: (req, res) => {
+  insertGenres: (req, res) => {
     const data = {
       name: req.body.name
     }
+
     modelGenres.insertGenre(data)
       .then(result => {
         data.id = result.insertId
-        return responses.dataManipulationResponse(res, 201, 'Success add new genre', data)
+        return responses.dataManipulationResponse(res, 201, 'Success adding genre', data)
       })
       .catch(err => {
         console.error(err)
-        return responses.dataManipulationResponse(res, 500, 'Failed add new genre', err)
+        return responses.dataManipulationResponse(res, 500, 'Failed adding genre', err)
       })
   },
-  getAllGenre: (req, res) => {
+  getAllGenres: (req, res) => {
     modelGenres.getAllGenre()
       .then(result => {
         if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
@@ -28,8 +29,8 @@ module.exports = {
       })
   },
   getOneGenre: (req, res) => {
-    const genreid = req.params.genreid
-    modelGenres.getOneGenre(genreid)
+    const id = req.params.id
+    modelGenres.getOneGenre(id)
       .then(result => {
         if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
         else return responses.getDataResponse(res, 404, null, null, null, 'Genre not found')
@@ -39,29 +40,30 @@ module.exports = {
         return responses.getDataResponse(res, 500, err)
       })
   },
-  updateGenre: (req, res) => {
-    const genreid = req.params.genreid
+  updateGenres: (req, res) => {
+    const id = req.params.id
     const data = {
       name: req.body.name
     }
-    modelGenres.updateGenre(genreid, data)
+
+    modelGenres.updateGenre(id, data)
       .then(result => {
-        data.genreid = genreid
-        if (result.affectedRows !== 0) return responses.dataManipulationResponse(res, 200, 'Success update genre', data)
-        else return responses.dataManipulationResponse(res, 404, 'Failed to update genre', data)
+        data.id = id
+        if (result.affectedRows !== 0) return responses.dataManipulationResponse(res, 200, 'Success updating data', data)
+        else return responses.dataManipulationResponse(res, 500, 'Failed to update', data)
       })
       .catch(err => {
         console.error(err)
         return responses.dataManipulationResponse(res, 500, err)
       })
   },
-  deleteGenre: (req, res) => {
-    const genreid = req.params.genreid
+  deleteGenres: (req, res) => {
+    const id = req.params.id
 
-    modelGenres.deleteGenre(genreid)
+    modelGenres.deleteGenre(id)
       .then(result => {
-        if (result.affectedRows !== 0) return responses.dataManipulationResponse(res, 200, 'Success delete genre', { genreid })
-        else return responses.dataManipulationResponse(res, 404, 'Failed to delete genre', genreid)
+        if (result.affectedRows !== 0) return responses.dataManipulationResponse(res, 200, 'Success deleting data', { id })
+        else return responses.dataManipulationResponse(res, 500, 'Failed to delete', { id })
       })
       .catch(err => {
         console.error(err)

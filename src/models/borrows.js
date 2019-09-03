@@ -1,102 +1,70 @@
 const conn = require('../configs/db')
+const borrowings_list = 'select `borrowings`.`id` AS `id`,`borrowings`.`book_id` AS `book_id`,`books`.`title` AS `title`,`users`.`username` AS `username`,`borrowings`.`borrowed_at` AS `borrowed_at`,`borrowings`.`returned_at` AS `returned_at` from ((`borrowings` join `users` on((`borrowings`.`user_id` = `users`.`id`))) join `books` on((`borrowings`.`book_id` = `books`.`id`)))'
 
 module.exports = {
-  insertBorrow: (data) => {
-    const errormsg = {
-      msg: 'Cannot borrow a book that has already been borrowed or not available book'
-    }
+  insertBorrowing: (data) => {
     return new Promise((resolve, reject) => {
-      conn.query('SELECT available FROM tb_books WHERE bookid = ?',
-        data.bookid, (err, result) => {
-          if (!err) {
-            if (result[0].available === 1) {
-              conn.query('INSERT tb_borrows SET ?',
-                data, (err, result) => {
-                  if (!err) {
-                    conn.query('UPDATE tb_books SET available = 0 WHERE bookid = ?',
-                      data.bookid, (err, result) => {
-                        if (!err) {
-                          resolve(result)
-                        } else { reject(err) }
-                      })
-                  } else { reject(err) }
-                })
-            } else { resolve(errormsg) }
-          } else { reject(err) }
-        })
+      conn.query('INSERT borrowings SET ?', data, (err, result) => {
+        if (err) { reject(err) } else { resolve(result) }
+      })
     })
   },
-  getAllBorrow: (keyword = null, sort = null, rentbook = null, skip, limit) => {
+  getAllBorrowing: (keyword = null, sort = null, bookStatus = null, start, limit) => {
     return new Promise((resolve, reject) => {
-      let query = 'SELECT * FROM tb_borrows '
+      let query = borrowings_list
 
-      const rentBookNotNull = rentbook != null
-      const keywordNotNull = keyword != null
+      const bookStatusIsNotNull = bookStatus != null
+      const keywordIsNotNull = keyword != null
 
-      if (rentBookNotNull || keywordNotNull) {
+      if (bookStatusIsNotNull || keywordIsNotNull) {
         query += `WHERE `
-        query += keywordNotNull ? `title LIKE '%${keyword}%' ` : ''
-        query += rentBookNotNull && keywordNotNull ? `AND ` : ``
-        query += rentBookNotNull ? `return_at IS ` : ``
-        query += rentBookNotNull && rentbook === 'returned' ? 'NOT NULL ' : ''
-        query += rentBookNotNull && rentbook === 'borrowed' ? 'NULL ' : ''
+        query += keywordIsNotNull ? `title LIKE '%${keyword}%' ` : ''
+        query += bookStatusIsNotNull && keywordIsNotNull ? `AND ` : ``
+        query += bookStatusIsNotNull ? `returned_at IS ` : ``
+        query += bookStatusIsNotNull && bookStatus === 'returned' ? 'NOT NULL ' : ''
+        query += bookStatusIsNotNull && bookStatus === 'borrowed' ? 'NULL ' : ''
       }
-      if (sort != null) { query += `ORDER BY ${sort} ` }
 
-      conn.query(query + `LIMIT ${skip}, ${limit}`, (err, result) => {
+      if (sort != null) { query += `ORDER BY ${sort} ` }
+      conn.query(query + `LIMIT ${start}, ${limit}`, (err, result) => {
+        if (err) reject(err)
+        else resolve(result)
+      })
+    })
+  },
+  getOneBorrowing: (id) => {
+    return new Promise((resolve, reject) => {
+      conn.query(`${borrowings_list} WHERE borrowings.id = ?`, id, (err, result) => {
         if (err) { reject(err) } else { resolve(result) }
       })
     })
   },
-  getOneBorrow: (borrowid) => {
+  getLatestBorrowingByBookId: (id) => {
     return new Promise((resolve, reject) => {
-      conn.query(`SELECT * FROM tb_borrows WHERE borrowid = ?`, borrowid,
-        (err, result) => {
-          if (!err) { resolve(result) } else { reject(err) }
-        })
-    })
-  },
-  returnBorrow: (data) => {
-    return new Promise((resolve, reject) => {
-      conn.query('SELECT * FROM tb_borrows WHERE bookid = ? AND return_at IS NULL',
-        data.bookid, (err, result) => {
-          if (!err) {
-            conn.query('UPDATE tb_borrows SET return_at = ? WHERE borrowid = ?',
-              [data.return_at, result[0].id], (err, result) => {
-                if (!err) {
-                  resolve(result)
-                  conn.query('UPDATE tb_books SET available = 1 WHERE bookid = ?',
-                    data.bookid, (err, result) => {
-                      if (!err) {resolve(result)} else { reject(err) }
-                    })
-                } else { reject(err) }
-              })
-          } else { reject(err) }
-        })
-    })
-  },
-  getLatestBorrowingByBookId: (borrowid) => {
-    return new Promise((resolve, reject) => {
-      conn.query('SELECT * FROM tb_borrows WHERE bookid = ? AND return_at IS NULL', borrowid, 
-      (err, result) => {
+      conn.query('SELECT * FROM borrowings WHERE book_id = ? AND returned_at IS NULL', id, (err, result) => {
         if (err) { reject(err) } else { resolve(result) }
       })
     })
   },
-  getBorrowsHistoryByUserId: (borrowid) => {
+  getBorrowingsHistoryByUserId: (id) => {
     return new Promise((resolve, reject) => {
-      conn.query('SELECT * FROM tb_borrows JOIN `tb_books` ON tb_books.bookid = tb_borrows.bookid WHERE tb_borrows.userid = ? GROUP BY tb_books.bookid', 
-      borrowid, (err, result) => {
+      conn.query('SELECT borrowings.*, `books`.`id` AS `id`,`books`.`title` AS `title`,`books`.`description` AS `description`,`books`.`image` AS `image`,`books`.`date_released` AS `date_released`,`books`.`availability` AS `availability`,`genres`.`id` AS `genre_id`,`genres`.`name` AS `genre` from `books` join `genres` on`books`.`genre_id` = `genres`.`id` join borrowings on borrowings.book_id = books.id WHERE borrowings.user_id', id, (err, result) => {
         if (err) { reject(err) } else { resolve(result) }
       })
     })
   },
-  deleteBorrow: (bookid) => {
+  returningBook: (id, data) => {
     return new Promise((resolve, reject) => {
-      conn.query('DELETE FROM tb_borrows WHERE borrowid = ?', bookid,
-        (err, result) => {
-          if (!err) { resolve(result) } else { resolve(result) }
-        })
+      conn.query('UPDATE borrowings SET ? where id = ?', [data, id], (err, result) => {
+        if (err) { reject(err) } else { resolve(result) }
+      })
+    })
+  },
+  deleteBorrowing: (id) => {
+    return new Promise((resolve, reject) => {
+      conn.query('DELETE FROM borrowings WHERE id = ?', id, (err, result) => {
+        if (err) { reject(err) } else { resolve(result) }
+      })
     })
   }
 }
