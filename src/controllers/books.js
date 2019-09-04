@@ -1,28 +1,46 @@
 const modelBooks = require('../models/books')
 const responses = require('../responses')
+const multer = require('../helpers/multer')
+const cloudinaryConfig = require('../configs/cloudinary')
 
 module.exports = {
   insertBook: (req, res) => {
-    const data = {
-      title: req.body.title,
-      description: req.body.description,
-      image: req.body.image,
-      date_released: req.body.date_released,
-      genre_id: req.body.genre_id,
-      availability: 1,
-      created_at: new Date(),
-      Updated_at: new Date()
-    }
+    const imageData = {
+      image: req.file
+  }
+  if(imageData.image) {
+      const file = multer.dataUri(req).content
 
-    modelBooks.insertBook(data)
-      .then(result => {
-        data.id = result.insertId
-        return responses.dataManipulationResponse(res, 201, 'Success inserting data', data)
-      })
-      .catch(err => {
-        console.error(err)
-        return responses.dataManipulationResponse(res, 500, 'Failed to insert data', err)
-      })
+      return cloudinaryConfig.uploader.upload(file)
+        .then((result) => {
+          const data = {
+            title: req.body.title,
+            description: req.body.description,
+            image: result.url,
+            date_released: req.body.date_released,
+            genre_id: req.body.genre_id,
+            availability: 1,
+            created_at: new Date(),
+            Updated_at: new Date()
+          }
+          modelBooks.insertBook(data)
+            .then(result => {
+              data.id = result.insertId
+              return responses.dataManipulationResponse(res, 201, 'Success inserting data', data)
+            })
+            .catch(err => {
+              console.error(err)
+              return responses.dataManipulationResponse(res, 500, 'Failed to insert data', err)
+            })
+        })
+        .catch((err) => res.status(400).json({
+          message: 'Something want wrong thile processing your request',
+          data: {
+            err
+          }
+        }))
+    }
+    
   },
   getAllBook: (req, res) => {
     const keyword = req.query.search

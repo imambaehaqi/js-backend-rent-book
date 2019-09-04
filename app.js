@@ -6,6 +6,9 @@ const logger = require('morgan')
 const cors = require('cors')
 const bodyParser = require('body-parser')
 
+const path = require('path')
+const cloudinaryConfig = require('./src/configs/cloudinary')
+
 const bookRoute = require('./src/routes/books')
 const genreRoute = require('./src/routes/genres')
 const borrowRoute = require('./src/routes/borrows')
@@ -22,6 +25,9 @@ app.use(cors())
 app.use(logger('dev'))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
+
+app.use(express.static(path.resolve(__dirname, 'src/public')))
+app.use('*', cloudinaryConfig.cloudinaryConfig)
 
 // url pages
 app.use('/books', bookRoute)

@@ -7,7 +7,7 @@ const Auth = require('../helpers/auth')
 Route
   .post('/', Auth.verifyTokenHelpers, Auth.verifyAdminPrevilege, BorrowController.insertBorrowing)
   .get('/', Auth.verifyTokenHelpers, BorrowController.getAllBorrowing)
-  .get('/history/', Auth.verifyTokenHelpers, BorrowController.getBorrowingsHistory)
+  .get('/history', Auth.verifyTokenHelpers, BorrowController.getBorrowingsHistory)
   .get('/book/:id', Auth.verifyTokenHelpers, BorrowController.getLatestBorrowingByBookId)
   .get('/:id', Auth.verifyTokenHelpers, BorrowController.getOneBorrowing)
   .patch('/', Auth.verifyTokenHelpers, BorrowController.returningBook)
