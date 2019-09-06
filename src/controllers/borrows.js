@@ -3,26 +3,58 @@ const responses = require('../responses')
 const modelBook = require('../models/books')
 
 module.exports = {
-  insertBorrowing: (req, res) => {
-    const borrowingData = {
+  getBorrowingRequests: (req, res) => {
+    modelBorrowings.getBorrowingRequests()
+      .then(result => {
+        if (result.length !== 0) return responses.getDataResponse(res, 200, result, result.length)
+        else return responses.getDataResponse(res, 404, null, null, null, 'Request data not found')
+      })
+      .catch(err => {
+        console.error(err)
+        return responses(res, 500, err)
+      })
+  },
+  requestBorrowing: (req, res) => {
+    let borrowingData = {
       user_id: req.body.user_id,
       book_id: req.body.book_id,
-      borrowed_at: new Date()
+      is_confirmed: req.body.is_confirmed || 0,
     }
+    if(borrowingData.is_confirmed !== 0) borrowingData.borrowed_at = new Date()
     modelBook.getAvailability(borrowingData.book_id)
       .then(result => {
         if (result[0].availability === 1) {
+          return modelBorrowings.insertBorrowing(borrowingData) 
+        } else {
+          return responses.dataManipulationResponse(res, 409, 'Book is not yet available')
+        }
+      }) 
+      .then(result => {
+        console.log(result)
+        borrowingData.id = result.insertId
+        return responses.dataManipulationResponse(res, 201, 'Borrowing Requested', borrowingData)
+      })
+      .catch(err => {
+        console.error(err)
+        return responses.dataManipulationResponse(res, 500, 'Failed to borrow book', err)
+      })
+  },
+  confirmBorrowing:(req, res)=>{
+    const id = req.body.id
+    const book_id = req.body.book_id
+    modelBook.getAvailability(book_id)
+      .then(result => {
+        if (result[0].availability === 1) {
           return Promise.all([
-            modelBorrowings.insertBorrowing(borrowingData),
-            modelBook.setAvailability(borrowingData.book_id, 0)
+            modelBorrowings.confirmBorrowing(id), 
+            modelBook.setAvailability(book_id)
           ])
         } else {
           return responses.dataManipulationResponse(res, 409, 'Book is not yet available')
         }
-      })
+      }) 
       .then(result => {
-        borrowingData.id = result[0].insertId
-        return responses.dataManipulationResponse(res, 201, 'Success borrowing book', borrowingData)
+        return responses.dataManipulationResponse(res, 201, 'Borrowing Confirmed', {id,book_id})
       })
       .catch(err => {
         console.error(err)

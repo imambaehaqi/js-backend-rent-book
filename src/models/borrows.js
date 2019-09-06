@@ -2,6 +2,24 @@ const conn = require('../configs/db')
 const borrowings_list = 'select `borrowings`.`id` AS `id`,`borrowings`.`book_id` AS `book_id`,`books`.`title` AS `title`,`users`.`username` AS `username`,`borrowings`.`borrowed_at` AS `borrowed_at`,`borrowings`.`returned_at` AS `returned_at` from ((`borrowings` join `users` on((`borrowings`.`user_id` = `users`.`id`))) join `books` on((`borrowings`.`book_id` = `books`.`id`)))'
 
 module.exports = {
+  getBorrowingRequests: () => {
+    return new Promise((resolve, reject) => {
+      conn.query('SELECT borrowings.*, books.title, users.username FROM borrowings JOIN books ON borrowings.book_id = books.id JOIN users ON users.id = borrowings.user_id WHERE is_confirmed = 0', (err, result) => {
+        if (err) { reject(err) } else { resolve(result) }
+      })
+    })
+  },
+  confirmBorrowing: (id) => {
+    const data ={
+      borrowed_at: new Date(),
+      is_confirmed: 1
+    }
+    return new Promise((resolve, reject) => {
+      conn.query('UPDATE borrowings SET ? WHERE id = ?', [data,id], (err, result) => {
+        if (err) { reject(err) } else { resolve(result) }
+      })
+    })
+  },
   insertBorrowing: (data) => {
     return new Promise((resolve, reject) => {
       conn.query('INSERT borrowings SET ?', data, (err, result) => {

@@ -16,7 +16,7 @@ Route
   .get('/year/:year', BookController.getBookByYear)
   .get('/genre/:genre', BookController.getBookByGenre)
   .get('/:id', BookController.getOneBook)
-  .patch('/:id', Auth.verifyTokenHelpers, Auth.verifyAdminPrevilege, BookController.updateBook)
+  .patch('/:id', Auth.verifyTokenHelpers, Auth.verifyAdminPrevilege, Multer.multerUploads, BookController.updateBook)
   .delete('/:id', Auth.verifyTokenHelpers, Auth.verifyAdminPrevilege, BookController.deleteBook)
 
 module.exports = Route
